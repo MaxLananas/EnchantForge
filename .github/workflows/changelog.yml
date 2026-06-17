@@ -1,0 +1,140 @@
+name: Generate Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_ref:
+        description: 'Commit/tag de départ (laisser vide = premier commit)'
+        required: false
+        default: ''
+      to_ref:
+        description: 'Commit/tag de fin (laisser vide = HEAD)'
+        required: false
+        default: 'HEAD'
+      output_format:
+        description: 'Format de sortie'
+        required: true
+        default: 'markdown'
+        type: choice
+        options:
+          - markdown
+          - json
+
+jobs:
+  changelog:
+    name: Generate Commit Changelog
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve refs
+        id: refs
+        run: |
+          TO="${{ github.event.inputs.to_ref }}"
+          FROM="${{ github.event.inputs.from_ref }}"
+
+          if [ -z "$TO" ] || [ "$TO" = "HEAD" ]; then
+            TO=$(git rev-parse HEAD)
+          fi
+
+          if [ -z "$FROM" ]; then
+            FROM=$(git rev-list --max-parents=0 HEAD)
+          fi
+
+          echo "from=$FROM" >> $GITHUB_OUTPUT
+          echo "to=$TO"     >> $GITHUB_OUTPUT
+
+      - name: Generate Markdown changelog
+        if: ${{ github.event.inputs.output_format == 'markdown' }}
+        run: |
+          FROM="${{ steps.refs.outputs.from }}"
+          TO="${{ steps.refs.outputs.to }}"
+
+          echo "# EnchantForge — Changelog" > changelog.md
+          echo "" >> changelog.md
+          echo "> Généré le $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> changelog.md
+          echo "> Période : \`${FROM:0:7}\` → \`${TO:0:7}\`" >> changelog.md
+          echo "" >> changelog.md
+
+          declare -A sections
+          sections["feat"]="## ✨ Nouvelles fonctionnalités"
+          sections["fix"]="## 🐛 Corrections de bugs"
+          sections["perf"]="## ⚡ Performances"
+          sections["refactor"]="## 🔨 Refactoring"
+          sections["docs"]="## 📚 Documentation"
+          sections["chore"]="## 🔧 Maintenance"
+          sections["ci"]="## ⚙️ CI/CD"
+          sections["other"]="## 📦 Autres"
+
+          for type in feat fix perf refactor docs chore ci other; do
+            if [ "$type" = "other" ]; then
+              commits=$(git log --pretty=format:"- %s (%h) — %an" \
+                "${FROM}..${TO}" \
+                --grep="^feat\|^fix\|^perf\|^refactor\|^docs\|^chore\|^ci" \
+                --invert-grep 2>/dev/null || true)
+            else
+              commits=$(git log --pretty=format:"- %s (%h) — %an" \
+                "${FROM}..${TO}" \
+                --grep="^${type}" 2>/dev/null || true)
+            fi
+
+            if [ -n "$commits" ]; then
+              echo "${sections[$type]}" >> changelog.md
+              echo "" >> changelog.md
+              echo "$commits" >> changelog.md
+              echo "" >> changelog.md
+            fi
+          done
+
+          TOTAL=$(git rev-list --count "${FROM}..${TO}")
+          echo "---" >> changelog.md
+          echo "_Total : **${TOTAL} commits**_" >> changelog.md
+
+          cat changelog.md
+
+      - name: Generate JSON changelog
+        if: ${{ github.event.inputs.output_format == 'json' }}
+        run: |
+          FROM="${{ steps.refs.outputs.from }}"
+          TO="${{ steps.refs.outputs.to }}"
+
+          echo "[" > changelog.json
+          git log "${FROM}..${TO}" \
+            --pretty=format:'  {"hash":"%H","short":"%h","author":"%an","email":"%ae","date":"%ai","subject":"%s"},' \
+            >> changelog.json
+          sed -i '$ s/,$//' changelog.json
+          echo "" >> changelog.json
+          echo "]" >> changelog.json
+
+          cat changelog.json
+
+      - name: Upload Markdown changelog
+        if: ${{ github.event.inputs.output_format == 'markdown' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog-markdown-${{ github.run_id }}
+          path: changelog.md
+          retention-days: 90
+
+      - name: Upload JSON changelog
+        if: ${{ github.event.inputs.output_format == 'json' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog-json-${{ github.run_id }}
+          path: changelog.json
+          retention-days: 90
+
+      - name: Summary
+        run: |
+          FROM="${{ steps.refs.outputs.from }}"
+          TO="${{ steps.refs.outputs.to }}"
+          TOTAL=$(git rev-list --count "${FROM}..${TO}")
+          echo "## ✅ Changelog généré" >> $GITHUB_STEP_SUMMARY
+          echo "- **Format** : ${{ github.event.inputs.output_format }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **De** : \`${FROM:0:7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **À** : \`${TO:0:7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commits** : ${TOTAL}" >> $GITHUB_STEP_SUMMARY
