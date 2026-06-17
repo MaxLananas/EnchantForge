@@ -16,53 +16,44 @@ public final class EnchantmentEngine {
     }
 
     public boolean hasBannedEnchantment(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return false;
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return false;
-
-        for (Enchantment enchantment : meta.getEnchants().keySet()) {
-            String key = resolveKey(enchantment);
-            if (plugin.getConfigManager().isBanned(key)) {
-                return true;
-            }
+        if (!hasEnchants(item)) return false;
+        for (Enchantment e : item.getItemMeta().getEnchants().keySet()) {
+            if (plugin.getConfigManager().isBanned(resolveKey(e))) return true;
         }
         return false;
     }
 
     public String getFirstBannedEnchantmentName(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return "";
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return "";
-
-        for (Enchantment enchantment : meta.getEnchants().keySet()) {
-            String key = resolveKey(enchantment);
-            if (plugin.getConfigManager().isBanned(key)) {
-                return enchantment.getKey().getKey().toUpperCase();
-            }
+        if (!hasEnchants(item)) return "";
+        for (Enchantment e : item.getItemMeta().getEnchants().keySet()) {
+            String key = resolveKey(e);
+            if (plugin.getConfigManager().isBanned(key)) return key;
         }
         return "";
     }
 
     public double computeDamageMultiplier(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return 1.0;
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return 1.0;
+        if (!hasEnchants(item)) return 1.0;
 
-        double totalMultiplier = 1.0;
-
-        for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
+        double total = 1.0;
+        for (Map.Entry<Enchantment, Integer> entry : item.getItemMeta().getEnchants().entrySet()) {
             String key = resolveKey(entry.getKey());
             if (plugin.getConfigManager().isBanned(key)) continue;
 
-            double baseMultiplier = plugin.getConfigManager().getMultiplier(key);
-            if (baseMultiplier == 1.0) continue;
+            double base = plugin.getConfigManager().getMultiplier(key);
+            if (base == 1.0) continue;
 
-            double deviation = baseMultiplier - 1.0;
-            int level = entry.getValue();
-            totalMultiplier *= (1.0 + deviation * level);
+            double deviation = base - 1.0;
+            int    level     = entry.getValue();
+            total *= (1.0 + deviation * level);
         }
+        return total;
+    }
 
-        return totalMultiplier;
+    private boolean hasEnchants(ItemStack item) {
+        if (item == null) return false;
+        ItemMeta meta = item.getItemMeta();
+        return meta != null && !meta.getEnchants().isEmpty();
     }
 
     private String resolveKey(Enchantment enchantment) {
