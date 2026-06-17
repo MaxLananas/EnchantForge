@@ -3,7 +3,6 @@ package dev.enchantforge.listener;
 import dev.enchantforge.EnchantForge;
 import dev.enchantforge.engine.EnchantmentEngine;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,9 +12,8 @@ import org.bukkit.inventory.ItemStack;
 
 public final class DamageListener implements Listener {
 
-    private final EnchantForge plugin;
+    private final EnchantForge      plugin;
     private final EnchantmentEngine engine;
-    private final LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
 
     public DamageListener(EnchantForge plugin) {
         this.plugin = plugin;
@@ -30,20 +28,20 @@ public final class DamageListener implements Listener {
 
         if (engine.hasBannedEnchantment(weapon)) {
             event.setCancelled(true);
+
             String enchantName = engine.getFirstBannedEnchantmentName(weapon);
             String raw = plugin.getConfigManager().getPrefix()
                     + plugin.getConfigManager().getMsgBanned()
-                    .replace("{enchant}", enchantName);
-            Component msg = legacy.deserialize(raw);
+                        .replace("{enchant}", enchantName);
+
+            Component msg = plugin.getLegacy().deserialize(raw);
             attacker.sendMessage(msg);
             return;
         }
 
         double multiplier = engine.computeDamageMultiplier(weapon);
-
         if (multiplier != 1.0) {
-            double newDamage = event.getDamage() * multiplier;
-            event.setDamage(newDamage);
+            event.setDamage(event.getDamage() * multiplier);
         }
     }
 }
