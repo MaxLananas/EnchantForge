@@ -3,14 +3,14 @@ package dev.enchantforge;
 import dev.enchantforge.command.EnchantForgeCommand;
 import dev.enchantforge.config.ConfigManager;
 import dev.enchantforge.listener.DamageListener;
-import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class EnchantForge extends JavaPlugin {
 
     private static EnchantForge instance;
     private ConfigManager configManager;
-    private final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private final LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
 
     @Override
     public void onEnable() {
@@ -29,12 +29,14 @@ public final class EnchantForge extends JavaPlugin {
             cmd.setTabCompleter(handler);
         }
 
-        getLogger().info("EnchantForge 1.0.0 activé — Enchantments reforged.");
+        getLogger().info("EnchantForge " + getDescription().getVersion() + " enabled — enchantments reforged.");
+        getLogger().info("Loaded " + configManager.getMultipliers().size() + " modifier(s), "
+                + configManager.getBannedEnchantments().size() + " ban(s).");
     }
 
     @Override
     public void onDisable() {
-        getLogger().info("EnchantForge désactivé.");
+        getLogger().info("EnchantForge disabled.");
     }
 
     public static EnchantForge getInstance() {
@@ -45,7 +47,7 @@ public final class EnchantForge extends JavaPlugin {
         return configManager;
     }
 
-    public MiniMessage getMiniMessage() {
-        return miniMessage;
+    public LegacyComponentSerializer getLegacy() {
+        return legacy;
     }
 }
