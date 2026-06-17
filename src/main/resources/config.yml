@@ -1,1 +1,47 @@
+enchantments:
+  modifiers:
+    SHARPNESS:
+      enabled: true
+      damage_multiplier: 1.10
+      banned: false
 
+    FIRE_ASPECT:
+      enabled: true
+      damage_multiplier: 0.97
+      banned: false
+
+    BREACH:
+      enabled: true
+      damage_multiplier: 1.0
+      banned: true
+
+    POWER:
+      enabled: true
+      damage_multiplier: 1.05
+      banned: false
+
+    SMITE:
+      enabled: true
+      damage_multiplier: 1.0
+      banned: false
+
+    BANE_OF_ARTHROPODS:
+      enabled: true
+      damage_multiplier: 1.0
+      banned: false
+
+    KNOCKBACK:
+      enabled: true
+      damage_multiplier: 1.0
+      banned: false
+
+    SWEEPING_EDGE:
+      enabled: true
+      damage_multiplier: 1.0
+      banned: false
+
+messages:
+  prefix: "&8[&6EnchantForge&8] "
+  banned_enchant_blocked: "&cL'enchantement &e{enchant} &cest interdit sur ce serveur."
+  reload_success: "&aConfiguration rechargée avec succès."
+  reload_fail: "&cErreur lors du rechargement de la configuration."
