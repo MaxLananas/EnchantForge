@@ -2,7 +2,6 @@ package dev.enchantforge.command;
 
 import dev.enchantforge.EnchantForge;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,8 +15,9 @@ import java.util.Set;
 
 public final class EnchantForgeCommand implements CommandExecutor, TabCompleter {
 
+    private static final List<String> SUBCOMMANDS = List.of("reload", "info", "list");
+
     private final EnchantForge plugin;
-    private final LegacyComponentSerializer legacy = LegacyComponentSerializer.legacyAmpersand();
 
     public EnchantForgeCommand(EnchantForge plugin) {
         this.plugin = plugin;
@@ -30,7 +30,8 @@ public final class EnchantForgeCommand implements CommandExecutor, TabCompleter 
                              @NotNull String[] args) {
 
         if (!sender.hasPermission("enchantforge.admin")) {
-            send(sender, "&cVous n'avez pas la permission.");
+            send(sender, plugin.getConfigManager().getPrefix()
+                    + plugin.getConfigManager().getMsgNoPermission());
             return true;
         }
 
@@ -40,56 +41,90 @@ public final class EnchantForgeCommand implements CommandExecutor, TabCompleter 
         }
 
         switch (args[0].toLowerCase()) {
-            case "reload" -> {
-                try {
-                    plugin.getConfigManager().load();
-                    send(sender, plugin.getConfigManager().getPrefix()
-                            + plugin.getConfigManager().getMsgReloadSuccess());
-                } catch (Exception e) {
-                    send(sender, plugin.getConfigManager().getPrefix()
-                            + plugin.getConfigManager().getMsgReloadFail());
-                    plugin.getLogger().severe("Reload error: " + e.getMessage());
-                }
-            }
-            case "info" -> sendInfo(sender);
-            default -> sendHelp(sender);
+            case "reload" -> handleReload(sender);
+            case "info"   -> sendInfo(sender);
+            case "list"   -> sendList(sender);
+            default       -> sendHelp(sender);
         }
         return true;
     }
 
+    private void handleReload(CommandSender sender) {
+        try {
+            plugin.getConfigManager().load();
+            send(sender, plugin.getConfigManager().getPrefix()
+                    + plugin.getConfigManager().getMsgReloadSuccess());
+        } catch (Exception ex) {
+            send(sender, plugin.getConfigManager().getPrefix()
+                    + plugin.getConfigManager().getMsgReloadFail());
+            plugin.getLogger().severe("Reload error: " + ex.getMessage());
+        }
+    }
+
     private void sendHelp(CommandSender sender) {
-        send(sender, "&8&m                                        ");
+        send(sender, "&8&m────────────────────────────────────────");
         send(sender, "&6&lEnchantForge &7v" + plugin.getDescription().getVersion());
-        send(sender, "&e/ef reload &7— Recharge la configuration");
-        send(sender, "&e/ef info &7— Affiche les modificateurs actifs");
-        send(sender, "&8&m                                        ");
+        send(sender, " &e/ef reload &7— Reload the configuration");
+        send(sender, " &e/ef info   &7— Show active modifiers summary");
+        send(sender, " &e/ef list   &7— List all registered enchantments");
+        send(sender, "&8&m────────────────────────────────────────");
     }
 
     private void sendInfo(CommandSender sender) {
-        send(sender, "&8&m                                        ");
-        send(sender, "&6&lEnchantForge &7— Modificateurs actifs");
+        Map<String, Double> mods   = plugin.getConfigManager().getMultipliers();
+        Set<String>         bans   = plugin.getConfigManager().getBannedEnchantments();
 
-        Map<String, Double> multipliers = plugin.getConfigManager().getMultipliers();
-        Set<String> banned = plugin.getConfigManager().getBannedEnchantments();
+        send(sender, "&8&m────────────────────────────────────────");
+        send(sender, "&6&lEnchantForge &7— Active modifiers");
 
-        if (multipliers.isEmpty() && banned.isEmpty()) {
-            send(sender, "&7Aucun modificateur configuré.");
+        if (mods.isEmpty() && bans.isEmpty()) {
+            send(sender, "&7No modifiers configured.");
         }
 
-        multipliers.forEach((enchant, mult) -> {
-            double percent = (mult - 1.0) * 100;
-            String sign = percent >= 0 ? "&a+" : "&c";
-            send(sender, "&e" + enchant + " &7→ " + sign + String.format("%.1f", percent) + "%&7 dégâts");
+        mods.forEach((enchant, mult) -> {
+            double  percent = (mult - 1.0) * 100.0;
+            String  color   = percent >= 0 ? "&a" : "&c";
+            String  sign    = percent >= 0 ? "+" : "";
+            send(sender, " &e" + enchant + " &7→ " + color + sign + String.format("%.1f", percent) + "%");
         });
 
-        banned.forEach(enchant ->
-                send(sender, "&e" + enchant + " &7→ &cBANNI"));
+        bans.forEach(enchant ->
+                send(sender, " &e" + enchant + " &7→ &c&lBANNED"));
 
-        send(sender, "&8&m                                        ");
+        send(sender, "&8&m────────────────────────────────────────");
+    }
+
+    private void sendList(CommandSender sender) {
+        send(sender, "&8&m────────────────────────────────────────");
+        send(sender, "&6&lEnchantForge &7— All registered enchantments");
+
+        Map<String, Double> mods = plugin.getConfigManager().getMultipliers();
+        Set<String>         bans = plugin.getConfigManager().getBannedEnchantments();
+
+        for (org.bukkit.enchantments.Enchantment enc
+                : org.bukkit.Registry.ENCHANTMENT) {
+
+            String key    = enc.getKey().getKey().toUpperCase();
+            String status;
+
+            if (bans.contains(key)) {
+                status = "&c[BANNED]";
+            } else if (mods.containsKey(key)) {
+                double pct  = (mods.get(key) - 1.0) * 100.0;
+                String sign = pct >= 0 ? "+" : "";
+                status = "&a[" + sign + String.format("%.1f", pct) + "%]";
+            } else {
+                status = "&7[vanilla]";
+            }
+
+            send(sender, " &e" + key + " &r" + status);
+        }
+
+        send(sender, "&8&m────────────────────────────────────────");
     }
 
     private void send(CommandSender sender, String message) {
-        Component component = legacy.deserialize(message);
+        Component component = plugin.getLegacy().deserialize(message);
         sender.sendMessage(component);
     }
 
@@ -99,7 +134,10 @@ public final class EnchantForgeCommand implements CommandExecutor, TabCompleter 
                                                 @NotNull String label,
                                                 @NotNull String[] args) {
         if (args.length == 1) {
-            return List.of("reload", "info");
+            String input = args[0].toLowerCase();
+            return SUBCOMMANDS.stream()
+                    .filter(s -> s.startsWith(input))
+                    .toList();
         }
         return List.of();
     }
