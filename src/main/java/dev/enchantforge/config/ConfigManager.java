@@ -13,13 +13,14 @@ public final class ConfigManager {
 
     private final EnchantForge plugin;
 
-    private final Map<String, Double> multipliers = new HashMap<>();
-    private final Set<String> bannedEnchantments = new HashSet<>();
+    private final Map<String, Double> multipliers   = new HashMap<>();
+    private final Set<String>         banned        = new HashSet<>();
 
     private String prefix;
     private String msgBanned;
     private String msgReloadSuccess;
     private String msgReloadFail;
+    private String msgNoPermission;
 
     public ConfigManager(EnchantForge plugin) {
         this.plugin = plugin;
@@ -28,37 +29,37 @@ public final class ConfigManager {
     public void load() {
         plugin.reloadConfig();
         multipliers.clear();
-        bannedEnchantments.clear();
+        banned.clear();
 
         ConfigurationSection section = plugin.getConfig()
-                .getConfigurationSection("enchantments.modifiers");
+                .getConfigurationSection("enchantments");
 
         if (section != null) {
             for (String key : section.getKeys(false)) {
-                ConfigurationSection enchSection = section.getConfigurationSection(key);
-                if (enchSection == null) continue;
+                ConfigurationSection entry = section.getConfigurationSection(key);
+                if (entry == null) continue;
 
-                boolean enabled = enchSection.getBoolean("enabled", true);
-                boolean banned = enchSection.getBoolean("banned", false);
-                double multiplier = enchSection.getDouble("damage_multiplier", 1.0);
+                boolean enabled    = entry.getBoolean("enabled", true);
+                boolean isBanned   = entry.getBoolean("banned",  false);
+                double  multiplier = entry.getDouble("damage_multiplier", 1.0);
 
                 if (!enabled) continue;
 
-                if (banned) {
-                    bannedEnchantments.add(key.toUpperCase());
-                } else {
-                    multipliers.put(key.toUpperCase(), multiplier);
+                String normalized = key.toUpperCase();
+
+                if (isBanned) {
+                    banned.add(normalized);
+                } else if (multiplier != 1.0) {
+                    multipliers.put(normalized, multiplier);
                 }
             }
         }
 
-        prefix = plugin.getConfig().getString("messages.prefix", "&8[&6EnchantForge&8] ");
-        msgBanned = plugin.getConfig().getString("messages.banned_enchant_blocked",
-                "&cL'enchantement &e{enchant} &cest interdit.");
-        msgReloadSuccess = plugin.getConfig().getString("messages.reload_success",
-                "&aRechargement réussi.");
-        msgReloadFail = plugin.getConfig().getString("messages.reload_fail",
-                "&cErreur de rechargement.");
+        prefix           = plugin.getConfig().getString("messages.prefix",                "&8[&6EnchantForge&8] ");
+        msgBanned        = plugin.getConfig().getString("messages.banned_enchant_blocked", "&cForbidden enchantment: &e{enchant}");
+        msgReloadSuccess = plugin.getConfig().getString("messages.reload_success",         "&aConfiguration reloaded.");
+        msgReloadFail    = plugin.getConfig().getString("messages.reload_fail",            "&cReload failed.");
+        msgNoPermission  = plugin.getConfig().getString("messages.no_permission",          "&cNo permission.");
     }
 
     public Map<String, Double> getMultipliers() {
@@ -66,19 +67,20 @@ public final class ConfigManager {
     }
 
     public Set<String> getBannedEnchantments() {
-        return Collections.unmodifiableSet(bannedEnchantments);
+        return Collections.unmodifiableSet(banned);
     }
 
-    public double getMultiplier(String enchantmentKey) {
-        return multipliers.getOrDefault(enchantmentKey.toUpperCase(), 1.0);
+    public double getMultiplier(String key) {
+        return multipliers.getOrDefault(key.toUpperCase(), 1.0);
     }
 
-    public boolean isBanned(String enchantmentKey) {
-        return bannedEnchantments.contains(enchantmentKey.toUpperCase());
+    public boolean isBanned(String key) {
+        return banned.contains(key.toUpperCase());
     }
 
-    public String getPrefix() { return prefix; }
-    public String getMsgBanned() { return msgBanned; }
+    public String getPrefix()           { return prefix; }
+    public String getMsgBanned()        { return msgBanned; }
     public String getMsgReloadSuccess() { return msgReloadSuccess; }
-    public String getMsgReloadFail() { return msgReloadFail; }
+    public String getMsgReloadFail()    { return msgReloadFail; }
+    public String getMsgNoPermission()  { return msgNoPermission; }
 }
