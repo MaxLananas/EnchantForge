@@ -1,1 +1,18 @@
+name: EnchantForge
+version: '1.0.0'
+main: dev.enchantforge.EnchantForge
+api-version: '1.21'
+description: Buff, nerf and ban enchantments with precision.
+authors: [ EnchantForge ]
 
+commands:
+  enchantforge:
+    description: EnchantForge main command
+    aliases: [ ef ]
+    usage: /enchantforge <reload|info>
+    permission: enchantforge.admin
+
+permissions:
+  enchantforge.admin:
+    description: Access to EnchantForge admin commands
+    default: op
