@@ -1,47 +1,249 @@
+# ============================================================
+#   EnchantForge - Enchantment Modifier Configuration
+#   Compatible with Paper 1.21.10
+#
+#   damage_multiplier: final damage *= value per enchant level
+#     > 1.0 = buff   (e.g. 1.10 = +10% per level)
+#     < 1.0 = nerf   (e.g. 0.97 = -3%  per level)
+#     = 1.0 = vanilla (no change)
+#
+#   banned: true = blocks item use entirely and notifies player
+#   enabled: false = EnchantForge ignores this enchantment
+# ============================================================
+
 enchantments:
-  modifiers:
-    SHARPNESS:
-      enabled: true
-      damage_multiplier: 1.10
-      banned: false
 
-    FIRE_ASPECT:
-      enabled: true
-      damage_multiplier: 0.97
-      banned: false
+  # ── Melee weapons ─────────────────────────────────────────
+  SHARPNESS:
+    enabled: true
+    damage_multiplier: 1.10
+    banned: false
 
-    BREACH:
-      enabled: true
-      damage_multiplier: 1.0
-      banned: true
+  SMITE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
 
-    POWER:
-      enabled: true
-      damage_multiplier: 1.05
-      banned: false
+  BANE_OF_ARTHROPODS:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
 
-    SMITE:
-      enabled: true
-      damage_multiplier: 1.0
-      banned: false
+  SWEEPING_EDGE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
 
-    BANE_OF_ARTHROPODS:
-      enabled: true
-      damage_multiplier: 1.0
-      banned: false
+  KNOCKBACK:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
 
-    KNOCKBACK:
-      enabled: true
-      damage_multiplier: 1.0
-      banned: false
+  FIRE_ASPECT:
+    enabled: true
+    damage_multiplier: 0.97
+    banned: false
 
-    SWEEPING_EDGE:
-      enabled: true
-      damage_multiplier: 1.0
-      banned: false
+  LOOTING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Mace ──────────────────────────────────────────────────
+  DENSITY:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  BREACH:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: true
+
+  WIND_BURST:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Bow / Crossbow ────────────────────────────────────────
+  POWER:
+    enabled: true
+    damage_multiplier: 1.05
+    banned: false
+
+  PUNCH:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  FLAME:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  INFINITY:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  MULTISHOT:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  PIERCING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  QUICK_CHARGE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Trident ───────────────────────────────────────────────
+  IMPALING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  CHANNELING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  LOYALTY:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  RIPTIDE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Armor (damage reduction modifiers) ───────────────────
+  PROTECTION:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  BLAST_PROTECTION:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  FIRE_PROTECTION:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  PROJECTILE_PROTECTION:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  THORNS:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Helmet ────────────────────────────────────────────────
+  AQUA_AFFINITY:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  RESPIRATION:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Boots ─────────────────────────────────────────────────
+  DEPTH_STRIDER:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  FEATHER_FALLING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  FROST_WALKER:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  SOUL_SPEED:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Leggings ──────────────────────────────────────────────
+  SWIFT_SNEAK:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Tools ─────────────────────────────────────────────────
+  EFFICIENCY:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  FORTUNE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  SILK_TOUCH:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Fishing rod ───────────────────────────────────────────
+  LUCK_OF_THE_SEA:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  LURE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Universal ─────────────────────────────────────────────
+  UNBREAKING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  MENDING:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Curses ────────────────────────────────────────────────
+  BINDING_CURSE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  VANISHING_CURSE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
+
+  # ── Spear (1.21.10+) ─────────────────────────────────────
+  LUNGE:
+    enabled: true
+    damage_multiplier: 1.00
+    banned: false
 
 messages:
   prefix: "&8[&6EnchantForge&8] "
-  banned_enchant_blocked: "&cL'enchantement &e{enchant} &cest interdit sur ce serveur."
-  reload_success: "&aConfiguration rechargée avec succès."
-  reload_fail: "&cErreur lors du rechargement de la configuration."
+  banned_enchant_blocked: "&cThe enchantment &e{enchant} &cis forbidden on this server."
+  reload_success: "&aConfiguration reloaded successfully."
+  reload_fail: "&cFailed to reload configuration. Check console for errors."
+  no_permission: "&cYou do not have permission to use this command."
